@@ -114,90 +114,145 @@ function CityGuessGame({ onResult }: { onResult: (won: boolean, city: string) =>
 
 // База городов с признаками для детектива
 const AI_CITIES: { name: string; tags: Record<string, boolean> }[] = [
-  { name: "Москва",          tags: { столица: true,  миллионник: true,  море: false, сибирь: false, европа: true,  юг: false, север: false, река: true,  порт: false, древний: true  } },
-  { name: "Санкт-Петербург", tags: { столица: false, миллионник: true,  море: true,  сибирь: false, европа: true,  юг: false, север: true,  река: true,  порт: true,  древний: true  } },
-  { name: "Казань",          tags: { столица: false, миллионник: true,  море: false, сибирь: false, европа: true,  юг: false, север: false, река: true,  порт: false, древний: true  } },
-  { name: "Новосибирск",     tags: { столица: false, миллионник: true,  море: false, сибирь: true,  европа: false, юг: false, север: false, река: true,  порт: false, древний: false } },
-  { name: "Екатеринбург",    tags: { столица: false, миллионник: true,  море: false, сибирь: false, европа: false, юг: false, север: false, река: true,  порт: false, древний: false } },
-  { name: "Сочи",            tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: true,  юг: true,  север: false, река: false, порт: true,  древний: false } },
-  { name: "Владивосток",     tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: false, юг: false, север: false, река: false, порт: true,  древний: false } },
-  { name: "Нижний Новгород", tags: { столица: false, миллионник: true,  море: false, сибирь: false, европа: true,  юг: false, север: false, река: true,  порт: false, древний: true  } },
-  { name: "Калининград",     tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: true,  юг: false, север: false, река: false, порт: true,  древний: true  } },
-  { name: "Ярославль",       tags: { столица: false, миллионник: false, море: false, сибирь: false, европа: true,  юг: false, север: false, река: true,  порт: false, древний: true  } },
-  { name: "Омск",            tags: { столица: false, миллионник: true,  море: false, сибирь: true,  европа: false, юг: false, север: false, река: true,  порт: false, древний: false } },
-  { name: "Красноярск",      tags: { столица: false, миллионник: true,  море: false, сибирь: true,  европа: false, юг: false, север: false, река: true,  порт: false, древний: false } },
-  { name: "Ростов-на-Дону",  tags: { столица: false, миллионник: true,  море: false, сибирь: false, европа: true,  юг: true,  север: false, река: true,  порт: false, древний: false } },
-  { name: "Астрахань",       tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: true,  юг: true,  север: false, река: true,  порт: true,  древний: true  } },
-  { name: "Мурманск",        tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: true,  юг: false, север: true,  река: false, порт: true,  древний: false } },
+  // Миллионники
+  { name: "Москва",            tags: { столица: true,  миллионник: true,  море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: false } },
+  { name: "Санкт-Петербург",   tags: { столица: false, миллионник: true,  море: true,  сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: true,  река: true,  порт: true,  древний: true,  промышленный: true  } },
+  { name: "Новосибирск",       tags: { столица: false, миллионник: true,  море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Екатеринбург",      tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: true,  дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Казань",            tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Нижний Новгород",   tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Челябинск",         tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: true,  дальний_восток: false, поволжье: false, юг: false, север: false, река: false, порт: false, древний: false, промышленный: true  } },
+  { name: "Самара",            tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Омск",              tags: { столица: false, миллионник: true,  море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Ростов-на-Дону",    tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Уфа",               tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: true,  дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Красноярск",        tags: { столица: false, миллионник: true,  море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Воронеж",           tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Пермь",             tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: true,  дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Волгоград",         tags: { столица: false, миллионник: true,  море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: true,  север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  // Крупные города (500к–1млн)
+  { name: "Краснодар",         tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Саратов",           tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Тюмень",            tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Тольятти",          tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Ижевск",            tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: true,  дальний_восток: false, поволжье: false, юг: false, север: false, река: false, порт: false, древний: false, промышленный: true  } },
+  { name: "Барнаул",           tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Ульяновск",         tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Иркутск",           tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: false } },
+  { name: "Хабаровск",         tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: true,  поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Владивосток",       tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: true,  поволжье: false, юг: false, север: false, река: false, порт: true,  древний: false, промышленный: false } },
+  { name: "Ярославль",         tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Махачкала",         tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: false, порт: true,  древний: false, промышленный: false } },
+  { name: "Томск",             tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: false } },
+  { name: "Оренбург",          tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: true,  дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Кемерово",          tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Новокузнецк",       tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Рязань",            tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Астрахань",         tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: true,  север: false, река: true,  порт: true,  древний: true,  промышленный: false } },
+  { name: "Набережные Челны",  tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Липецк",            tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Киров",             tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Чебоксары",         tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Тула",              tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Курск",             tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Ставрополь",        tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: false, порт: false, древний: false, промышленный: false } },
+  { name: "Улан-Удэ",          tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Тверь",             tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Магнитогорск",      tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: true,  дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Иваново",           tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Брянск",            tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Сыктывкар",         tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: true,  река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Калуга",            tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Читa",              tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Сочи",              tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: false, порт: true,  древний: false, промышленный: false } },
+  { name: "Мурманск",          tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: true,  река: false, порт: true,  древний: false, промышленный: true  } },
+  { name: "Калининград",       tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: false, порт: true,  древний: true,  промышленный: false } },
+  { name: "Нальчик",           tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Владикавказ",       tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Грозный",           tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Якутск",            tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: true,  река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Петрозаводск",      tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: true,  река: false, порт: false, древний: true,  промышленный: false } },
+  { name: "Псков",             tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: false } },
+  { name: "Великий Новгород",  tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: false } },
+  { name: "Смоленск",          tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Архангельск",       tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: true,  река: true,  порт: true,  древний: true,  промышленный: true  } },
+  { name: "Белгород",          tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Саранск",           tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Пенза",             tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: true,  юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Вологда",           tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: true,  река: true,  порт: false, древний: true,  промышленный: false } },
+  { name: "Владимир",          tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: true,  промышленный: true  } },
+  { name: "Петропавловск-Камчатский", tags: { столица: false, миллионник: false, море: true, сибирь: false, урал: false, дальний_восток: true, поволжье: false, юг: false, север: false, река: false, порт: true,  древний: false, промышленный: false } },
+  { name: "Южно-Сахалинск",    tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: true,  поволжье: false, юг: false, север: false, река: false, порт: false, древний: false, промышленный: false } },
+  { name: "Биробиджан",        tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: true,  поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Благовещенск",      tags: { столица: false, миллионник: false, море: false, сибирь: false, урал: false, дальний_восток: true,  поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: false } },
+  { name: "Магадан",           tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: true,  поволжье: false, юг: false, север: true,  река: false, порт: true,  древний: false, промышленный: false } },
+  { name: "Нижневартовск",     tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Сургут",            tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: false, река: true,  порт: false, древний: false, промышленный: true  } },
+  { name: "Норильск",          tags: { столица: false, миллионник: false, море: false, сибирь: true,  урал: false, дальний_восток: false, поволжье: false, юг: false, север: true,  река: false, порт: false, древний: false, промышленный: true  } },
+  { name: "Новороссийск",      tags: { столица: false, миллионник: false, море: true,  сибирь: false, урал: false, дальний_восток: false, поволжье: false, юг: true,  север: false, река: false, порт: true,  древний: false, промышленный: true  } },
 ];
 
-const AI_QUESTIONS: { key: keyof typeof AI_CITIES[0]["tags"]; text: string }[] = [
-  { key: "столица",  text: "Это столица России?" },
-  { key: "миллионник", text: "В этом городе больше миллиона жителей?" },
-  { key: "море",     text: "Этот город стоит у моря или океана?" },
-  { key: "сибирь",   text: "Этот город находится в Сибири?" },
-  { key: "европа",   text: "Этот город в европейской части России?" },
-  { key: "юг",       text: "Это южный город (ниже Ростова по широте)?" },
-  { key: "север",    text: "Это северный город (севернее Питера)?" },
-  { key: "река",     text: "Через город протекает крупная река?" },
-  { key: "порт",     text: "Это портовый город?" },
-  { key: "древний",  text: "Городу больше 400 лет?" },
+const AI_QUESTIONS: { key: string; text: string }[] = [
+  { key: "столица",        text: "Это столица России?" },
+  { key: "миллионник",     text: "В этом городе больше миллиона жителей?" },
+  { key: "море",           text: "Этот город стоит у моря или океана?" },
+  { key: "сибирь",         text: "Этот город находится в Сибири?" },
+  { key: "урал",           text: "Этот город на Урале?" },
+  { key: "дальний_восток", text: "Это город Дальнего Востока?" },
+  { key: "поволжье",       text: "Этот город в Поволжье?" },
+  { key: "юг",             text: "Это южный город (Краснодарский край, Кавказ)?" },
+  { key: "север",          text: "Это северный город (за полярным кругом или близко)?" },
+  { key: "река",           text: "Через город протекает крупная река?" },
+  { key: "порт",           text: "Это портовый город?" },
+  { key: "древний",        text: "Городу больше 400 лет?" },
+  { key: "промышленный",   text: "Это крупный промышленный / заводской город?" },
 ];
 
 function AiDetectiveGame({ onResult }: { onResult: (won: boolean) => void }) {
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
-  const [qIdx, setQIdx] = useState(0);
+  const [qIdx, setQIdx] = useState(() => {
+    const best = AI_QUESTIONS.reduce((prev, cur) => {
+      const yes = AI_CITIES.filter(c => (c.tags as Record<string, boolean>)[cur.key]).length;
+      const balance = Math.abs(yes - AI_CITIES.length / 2);
+      const prevYes = AI_CITIES.filter(c => (c.tags as Record<string, boolean>)[prev.key]).length;
+      const prevBalance = Math.abs(prevYes - AI_CITIES.length / 2);
+      return balance < prevBalance ? cur : prev;
+    });
+    return AI_QUESTIONS.indexOf(best);
+  });
   const [phase, setPhase] = useState<"asking" | "guessing" | "done">("asking");
   const [guess, setGuess] = useState("");
 
-  const remaining = AI_CITIES.filter(city =>
-    Object.entries(answers).every(([key, val]) => city.tags[key as keyof typeof city.tags] === val)
-  );
+  const filterCities = (ans: Record<string, boolean>) =>
+    AI_CITIES.filter(city => Object.entries(ans).every(([k, v]) => (city.tags as Record<string, boolean>)[k] === v));
 
-  const nextQuestion = () => {
-    // выбираем вопрос, который максимально делит remaining пополам
-    const unanswered = AI_QUESTIONS.filter(q => !(q.key in answers));
-    if (!unanswered.length || remaining.length <= 1) {
-      const top = remaining[0]?.name ?? "Неизвестно";
-      setGuess(top);
-      setPhase("guessing");
-      return;
-    }
-    const best = unanswered.reduce((prev, cur) => {
-      const yes = remaining.filter(c => c.tags[cur.key]).length;
-      const balance = Math.abs(yes - remaining.length / 2);
-      const prevYes = remaining.filter(c => c.tags[prev.key]).length;
-      const prevBalance = Math.abs(prevYes - remaining.length / 2);
+  const bestQuestion = (ans: Record<string, boolean>, pool: typeof AI_CITIES) => {
+    const unanswered = AI_QUESTIONS.filter(q => !(q.key in ans));
+    if (!unanswered.length) return null;
+    return unanswered.reduce((prev, cur) => {
+      const yes = pool.filter(c => (c.tags as Record<string, boolean>)[cur.key]).length;
+      const balance = Math.abs(yes - pool.length / 2);
+      const prevYes = pool.filter(c => (c.tags as Record<string, boolean>)[prev.key]).length;
+      const prevBalance = Math.abs(prevYes - pool.length / 2);
       return balance < prevBalance ? cur : prev;
     });
-    setQIdx(AI_QUESTIONS.indexOf(best));
   };
+
+  const remaining = filterCities(answers);
 
   const handleAnswer = (val: boolean) => {
     const key = AI_QUESTIONS[qIdx].key;
     const newAnswers = { ...answers, [key]: val };
     setAnswers(newAnswers);
+    const newRemaining = filterCities(newAnswers);
 
-    const newRemaining = AI_CITIES.filter(city =>
-      Object.entries(newAnswers).every(([k, v]) => city.tags[k as keyof typeof city.tags] === v)
-    );
-
-    if (newRemaining.length <= 1 || Object.keys(newAnswers).length >= 7) {
-      const top = newRemaining[0]?.name ?? "Неизвестно";
-      setGuess(top);
+    if (newRemaining.length <= 1 || Object.keys(newAnswers).length >= 10) {
+      setGuess(newRemaining[0]?.name ?? "не знаю 🤔");
       setPhase("guessing");
     } else {
-      // пересчитаем следующий вопрос с newAnswers
-      const unanswered = AI_QUESTIONS.filter(q => !(q.key in newAnswers));
-      if (!unanswered.length) { setGuess(newRemaining[0]?.name ?? "?"); setPhase("guessing"); return; }
-      const best = unanswered.reduce((prev, cur) => {
-        const yes = newRemaining.filter(c => c.tags[cur.key]).length;
-        const balance = Math.abs(yes - newRemaining.length / 2);
-        const prevYes = newRemaining.filter(c => c.tags[prev.key]).length;
-        const prevBalance = Math.abs(prevYes - newRemaining.length / 2);
-        return balance < prevBalance ? cur : prev;
-      });
-      setQIdx(AI_QUESTIONS.indexOf(best));
+      const next = bestQuestion(newAnswers, newRemaining);
+      if (!next) { setGuess(newRemaining[0]?.name ?? "?"); setPhase("guessing"); return; }
+      setQIdx(AI_QUESTIONS.indexOf(next));
     }
   };
 
