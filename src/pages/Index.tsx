@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
-type GameType = "reaction" | "quiz" | "wordguess";
+type GameType = "reaction" | "quiz" | "wordguess" | "cityguess";
 
 interface Message {
   id: number;
@@ -32,6 +32,85 @@ const JOKES = [
   "Wi-Fi пропал. Семья впервые за год увидела друг друга за ужином и выяснила, что у них живёт незнакомый человек 😂",
   "— Дорогой, ты меня любишь?\n— Да.\n— Как сильно?\n— Хватит вопросов, смотри футбол 🙈",
 ];
+
+const CITIES = [
+  { city: "Москва", hints: ["Здесь находится Красная площадь", "Самый большой город России", "Здесь работает метро с 1935 года"] },
+  { city: "Санкт-Петербург", hints: ["Город на берегу Финского залива", "Здесь находится Эрмитаж", "Его называют «Северная столица»"] },
+  { city: "Казань", hints: ["Столица Татарстана", "Здесь есть Казанский кремль с мечетью Кул-Шариф", "Город двух культур — русской и татарской"] },
+  { city: "Новосибирск", hints: ["Крупнейший город Сибири", "Здесь есть знаменитый Академгородок", "Стоит на реке Обь"] },
+  { city: "Сочи", hints: ["Курортный город на Черноморском побережье", "Здесь проходили Олимпийские игры 2014 года", "Самый южный крупный город России"] },
+  { city: "Владивосток", hints: ["Город у берегов Тихого океана", "Конечная точка Транссибирской магистрали", "Находится дальше Токио по долготе"] },
+  { city: "Екатеринбург", hints: ["Стоит на границе Европы и Азии", "Четвёртый город России по численности", "Здесь расстреляли семью Романовых"] },
+  { city: "Нижний Новгород", hints: ["Стоит на слиянии Волги и Оки", "Известен знаменитой ярмаркой XIX века", "Родина Максима Горького"] },
+  { city: "Калининград", hints: ["Единственный российский эксклав", "Раньше назывался Кёнигсберг", "Стоит на берегу Балтийского моря"] },
+  { city: "Ярославль", hints: ["Один из городов Золотого кольца", "Здесь стоит старейший театр России", "Основан Ярославом Мудрым около 1010 года"] },
+];
+
+// --- City Guess Game ---
+function CityGuessGame({ onResult }: { onResult: (won: boolean, city: string) => void }) {
+  const [entry] = useState(() => CITIES[Math.floor(Math.random() * CITIES.length)]);
+  const [hintIdx, setHintIdx] = useState(0);
+  const [input, setInput] = useState("");
+  const [attempts, setAttempts] = useState<string[]>([]);
+  const [done, setDone] = useState(false);
+
+  const handleGuess = () => {
+    const guess = input.trim();
+    if (!guess) return;
+    const correct = guess.toLowerCase() === entry.city.toLowerCase();
+    setAttempts(prev => [...prev, guess]);
+    setInput("");
+    if (correct) {
+      setDone(true);
+      onResult(true, entry.city);
+    } else if (hintIdx < entry.hints.length - 1) {
+      setHintIdx(i => i + 1);
+    } else {
+      setDone(true);
+      onResult(false, entry.city);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1.5">
+        {entry.hints.slice(0, hintIdx + 1).map((hint, i) => (
+          <div key={i} className="flex gap-2 items-start animate-fade-in">
+            <span className="text-xs font-bold text-primary flex-shrink-0 mt-0.5">{i + 1}.</span>
+            <p className="text-xs text-foreground leading-snug">{hint}</p>
+          </div>
+        ))}
+      </div>
+      {hintIdx < entry.hints.length - 1 && !done && (
+        <p className="text-[10px] text-muted-foreground">Неверно — открываю следующую подсказку...</p>
+      )}
+      {attempts.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {attempts.map((a, i) => (
+            <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-destructive border border-destructive/20">{a}</span>
+          ))}
+        </div>
+      )}
+      {!done && (
+        <div className="flex gap-2">
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleGuess()}
+            placeholder="Название города..."
+            className="flex-1 px-3 py-2 rounded-xl border border-border bg-secondary text-foreground text-sm outline-none focus:border-primary transition-colors"
+          />
+          <button
+            onClick={handleGuess}
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            Ввести
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // --- Reaction Game ---
 function ReactionGame({ onResult }: { onResult: (ms: number) => void }) {
@@ -187,6 +266,7 @@ function GameBubble({ gameType, onComplete }: { gameType: GameType; onComplete: 
     reaction: "⚡ Реакция",
     quiz: "🧠 Викторина",
     wordguess: "🔤 Угадай слово",
+    cityguess: "🏙️ Угадай город",
   };
 
   const handleReaction = (ms: number) => {
@@ -207,6 +287,11 @@ function GameBubble({ gameType, onComplete }: { gameType: GameType; onComplete: 
     onComplete(won ? "Ура! Слово угадано — ты молодец 🏆" : "Не угадал на этот раз, но это было сложно 💙");
   };
 
+  const handleCity = (won: boolean, city: string) => {
+    setDone(true);
+    onComplete(won ? `Правильно — это ${city}! Отличное знание географии 🗺️` : `Не угадал — это был ${city}. В следующий раз получится 💪`);
+  };
+
   return (
     <div className="chat-bubble-bot p-4 w-72 animate-fade-in">
       <p className="text-xs font-semibold text-primary mb-3">{titles[gameType]}</p>
@@ -217,6 +302,7 @@ function GameBubble({ gameType, onComplete }: { gameType: GameType; onComplete: 
           {gameType === "reaction" && <ReactionGame onResult={handleReaction} />}
           {gameType === "quiz" && <QuizGame onResult={handleQuiz} />}
           {gameType === "wordguess" && <WordGuessGame onResult={handleWord} />}
+          {gameType === "cityguess" && <CityGuessGame onResult={handleCity} />}
         </>
       )}
     </div>
@@ -227,6 +313,7 @@ const GAME_CHIPS: { type: GameType; emoji: string; label: string; desc: string }
   { type: "reaction", emoji: "⚡", label: "Реакция", desc: "Скорость нажатия" },
   { type: "quiz", emoji: "🧠", label: "Викторина", desc: "Ответь на вопрос" },
   { type: "wordguess", emoji: "🔤", label: "Угадай слово", desc: "Буква за буквой" },
+  { type: "cityguess", emoji: "🏙️", label: "Угадай город", desc: "По подсказкам" },
 ];
 
 const JOKE_CHIP = { emoji: "😂", label: "Анекдот", desc: "Случайная шутка" };
