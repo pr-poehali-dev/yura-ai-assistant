@@ -539,9 +539,22 @@ const GAME_CHIPS: { type: GameType; emoji: string; label: string; desc: string }
 
 const JOKE_CHIP = { emoji: "😂", label: "Анекдот", desc: "Случайная шутка" };
 
+const SEARCH_URL = "https://functions.poehali.dev/e66cdaa7-6d1f-43f8-a17f-e59f15719366";
+
+function isSearchQuery(text: string): boolean {
+  const lower = text.toLowerCase();
+  // явные команды поиска
+  if (lower.match(/^(найди|поищи|погугли|узнай|что такое|кто такой|кто такая|расскажи про|расскажи о|информация о|что знаешь о|когда|где находится|сколько стоит|как работает|почему|зачем|что случилось|последние новости|новости)/)) return true;
+  // вопросительные предложения с вопросительным знаком (не про игры/анекдоты)
+  if (text.includes("?") && text.length > 15) return true;
+  // фразы с "в интернете", "в сети"
+  if (lower.match(/в интернете|в сети|найди в/)) return true;
+  return false;
+}
+
 export default function Index() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, type: "bot", text: "Привет! Я здесь, чтобы скрасить твой день 😊 Можем поболтать, сыграть в игру или я расскажу анекдот — пиши «анекдот»!", timestamp: new Date() },
+    { id: 1, type: "bot", text: "Привет! Я здесь, чтобы скрасить твой день 😊 Могу поболтать, сыграть в игру, рассказать анекдот — или найти что-нибудь в интернете. Просто спроси!", timestamp: new Date() },
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -562,6 +575,23 @@ export default function Index() {
     }, delay + Math.random() * 300);
   };
 
+  const doSearch = async (query: string) => {
+    setIsTyping(true);
+    try {
+      const resp = await fetch(SEARCH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      const data = await resp.json();
+      setIsTyping(false);
+      addMessage({ type: "bot", text: `🔍 ${data.answer}` });
+    } catch {
+      setIsTyping(false);
+      addMessage({ type: "bot", text: "Упс, не смог подключиться к интернету. Попробуй ещё раз 🌐" });
+    }
+  };
+
   const handleSend = () => {
     const text = input.trim();
     if (!text) return;
@@ -569,19 +599,21 @@ export default function Index() {
     setInput("");
 
     const lower = text.toLowerCase();
-    if (lower.match(/анекдот|расскажи|пошути|смешно|смеш|шутк|хаха/)) {
+    if (lower.match(/анекдот|пошути|смешно|смеш|шутк|хаха/)) {
       const joke = JOKES[Math.floor(Math.random() * JOKES.length)];
       botReply(joke);
     } else if (lower.includes("игр")) {
       botReply("Выбери игру снизу и я запущу её прямо здесь! 🎮");
-    } else if (lower.match(/привет|здорово|хай|hi|hello/)) {
+    } else if (lower.match(/^привет|^здорово|^хай|^hi|^hello/)) {
       botReply("Привет-привет! 👋 Как дела?");
     } else if (lower.match(/как дела|как ты|как жизнь/)) {
       botReply("Отлично, спасибо! Готов веселиться 🎉 А у тебя как?");
     } else if (lower.includes("скуч")) {
       botReply("Давай поиграем! Нажми на карточку игры снизу 🎮");
+    } else if (isSearchQuery(text)) {
+      doSearch(text);
     } else {
-      const r = ["Интересно! Расскажи больше 😊", "Понял тебя! А ещё — хочешь сыграть? 🎮", "Здорово! Как настроение сегодня?", "Ха! 😄 Можем ещё и поиграть, если хочешь"];
+      const r = ["Интересно! Расскажи больше 😊", "Понял тебя! Кстати, я умею искать в интернете — просто спроси 🔍", "Здорово! Как настроение сегодня?", "Ха! 😄 Если хочешь что-то найти — просто спроси меня"];
       botReply(r[Math.floor(Math.random() * r.length)]);
     }
   };
@@ -596,6 +628,10 @@ export default function Index() {
     addMessage({ type: "user", text: "Расскажи анекдот 😂" });
     const joke = JOKES[Math.floor(Math.random() * JOKES.length)];
     botReply(joke, 600);
+  };
+
+  const handleSearchHint = () => {
+    botReply("Напиши мне любой вопрос — например «Что такое квантовый компьютер?» или «Погода в Сочи» — и я найду ответ в интернете 🔍", 300);
   };
 
   const handleGameComplete = (text: string) => botReply(text, 400);
@@ -647,7 +683,7 @@ export default function Index() {
               <span className="text-primary-foreground font-bold text-xs">З</span>
             </div>
             <div className="chat-bubble-bot px-4 py-3">
-              <div className="flex gap-1 items-center">
+              <div className="flex gap-1.5 items-center">
                 <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse-soft" style={{ animationDelay: "0ms" }} />
                 <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse-soft" style={{ animationDelay: "200ms" }} />
                 <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse-soft" style={{ animationDelay: "400ms" }} />
@@ -683,6 +719,16 @@ export default function Index() {
             <div className="text-left">
               <p className="text-xs font-semibold text-foreground whitespace-nowrap">{JOKE_CHIP.label}</p>
               <p className="text-[10px] text-muted-foreground whitespace-nowrap">{JOKE_CHIP.desc}</p>
+            </div>
+          </button>
+          <button
+            onClick={handleSearchHint}
+            className="game-card flex-shrink-0 px-3 py-2.5 flex items-center gap-2.5"
+          >
+            <span className="text-xl">🔍</span>
+            <div className="text-left">
+              <p className="text-xs font-semibold text-foreground whitespace-nowrap">Поиск</p>
+              <p className="text-[10px] text-muted-foreground whitespace-nowrap">Найду в интернете</p>
             </div>
           </button>
         </div>

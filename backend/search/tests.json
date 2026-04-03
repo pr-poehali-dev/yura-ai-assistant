@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Поиск по запросу",
+      "method": "POST",
+      "path": "/",
+      "body": {"query": "столица России"},
+      "expectedStatus": 200,
+      "expectedBody": {"answer": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
