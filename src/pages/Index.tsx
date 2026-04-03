@@ -20,6 +20,19 @@ const QUIZ_QUESTIONS = [
 
 const WORDS = ["КОШКА", "ЗОНТИК", "ПИРОГ", "ОБЛАКО", "ФОНАРЬ", "МУЗЫКА", "РАДУГА", "РАКЕТА"];
 
+const JOKES = [
+  "Почему программисты не любят природу? Там слишком много багов 🐛",
+  "— Доктор, у меня всё болит!\n— Покажите где.\n— Вот, смотрите: тыкаю в ногу — больно, тыкаю в живот — больно...\n— У вас сломан палец 😄",
+  "Муж звонит жене: «Дорогая, я выиграл в лотерею миллион! Собирай вещи!» — «Что брать?» — «Что хочешь, я уже уехал» 😂",
+  "— Чем отличается мужчина от ребёнка?\n— Ценой игрушек 🎮",
+  "Оптимист говорит: стакан наполовину полон. Пессимист: наполовину пуст. Программист: стакан вдвое больше, чем нужно 🥛",
+  "— Как дела?\n— Как у Рентгена.\n— Это как?\n— Все просвечиваю, никто не благодарит 😅",
+  "Кот смотрит на рыбок в аквариуме и думает: «Телевизор с едой» 🐟",
+  "— Папа, а ты умеешь плавать?\n— Умею, сынок.\n— А почему тогда по воде не ходишь? 😄",
+  "Wi-Fi пропал. Семья впервые за год увидела друг друга за ужином и выяснила, что у них живёт незнакомый человек 😂",
+  "— Дорогой, ты меня любишь?\n— Да.\n— Как сильно?\n— Хватит вопросов, смотри футбол 🙈",
+];
+
 // --- Reaction Game ---
 function ReactionGame({ onResult }: { onResult: (ms: number) => void }) {
   const [phase, setPhase] = useState<"wait" | "ready" | "done">("wait");
@@ -216,9 +229,11 @@ const GAME_CHIPS: { type: GameType; emoji: string; label: string; desc: string }
   { type: "wordguess", emoji: "🔤", label: "Угадай слово", desc: "Буква за буквой" },
 ];
 
+const JOKE_CHIP = { emoji: "😂", label: "Анекдот", desc: "Случайная шутка" };
+
 export default function Index() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, type: "bot", text: "Привет! Я здесь, чтобы скрасить твой день 😊 Можем поболтать или сыграть в игру — выбирай!", timestamp: new Date() },
+    { id: 1, type: "bot", text: "Привет! Я здесь, чтобы скрасить твой день 😊 Можем поболтать, сыграть в игру или я расскажу анекдот — пиши «анекдот»!", timestamp: new Date() },
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -246,7 +261,10 @@ export default function Index() {
     setInput("");
 
     const lower = text.toLowerCase();
-    if (lower.includes("игр")) {
+    if (lower.match(/анекдот|расскажи|пошути|смешно|смеш|шутк|хаха/)) {
+      const joke = JOKES[Math.floor(Math.random() * JOKES.length)];
+      botReply(joke);
+    } else if (lower.includes("игр")) {
       botReply("Выбери игру снизу и я запущу её прямо здесь! 🎮");
     } else if (lower.match(/привет|здорово|хай|hi|hello/)) {
       botReply("Привет-привет! 👋 Как дела?");
@@ -264,6 +282,12 @@ export default function Index() {
     const g = GAME_CHIPS.find(c => c.type === type)!;
     addMessage({ type: "user", text: `Хочу сыграть в «${g.label}»` });
     setTimeout(() => addMessage({ type: "game", gameType: type }), 400);
+  };
+
+  const tellJoke = () => {
+    addMessage({ type: "user", text: "Расскажи анекдот 😂" });
+    const joke = JOKES[Math.floor(Math.random() * JOKES.length)];
+    botReply(joke, 600);
   };
 
   const handleGameComplete = (text: string) => botReply(text, 400);
@@ -343,6 +367,16 @@ export default function Index() {
               </div>
             </button>
           ))}
+          <button
+            onClick={tellJoke}
+            className="game-card flex-shrink-0 px-3 py-2.5 flex items-center gap-2.5"
+          >
+            <span className="text-xl">{JOKE_CHIP.emoji}</span>
+            <div className="text-left">
+              <p className="text-xs font-semibold text-foreground whitespace-nowrap">{JOKE_CHIP.label}</p>
+              <p className="text-[10px] text-muted-foreground whitespace-nowrap">{JOKE_CHIP.desc}</p>
+            </div>
+          </button>
         </div>
       </div>
 
