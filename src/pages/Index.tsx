@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
-type GameType = "reaction" | "quiz" | "wordguess" | "cityguess";
+type GameType = "reaction" | "quiz" | "wordguess" | "cityguess" | "aidetective";
 
 interface Message {
   id: number;
@@ -107,6 +107,153 @@ function CityGuessGame({ onResult }: { onResult: (won: boolean, city: string) =>
             Ввести
           </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+// База городов с признаками для детектива
+const AI_CITIES: { name: string; tags: Record<string, boolean> }[] = [
+  { name: "Москва",          tags: { столица: true,  миллионник: true,  море: false, сибирь: false, европа: true,  юг: false, север: false, река: true,  порт: false, древний: true  } },
+  { name: "Санкт-Петербург", tags: { столица: false, миллионник: true,  море: true,  сибирь: false, европа: true,  юг: false, север: true,  река: true,  порт: true,  древний: true  } },
+  { name: "Казань",          tags: { столица: false, миллионник: true,  море: false, сибирь: false, европа: true,  юг: false, север: false, река: true,  порт: false, древний: true  } },
+  { name: "Новосибирск",     tags: { столица: false, миллионник: true,  море: false, сибирь: true,  европа: false, юг: false, север: false, река: true,  порт: false, древний: false } },
+  { name: "Екатеринбург",    tags: { столица: false, миллионник: true,  море: false, сибирь: false, европа: false, юг: false, север: false, река: true,  порт: false, древний: false } },
+  { name: "Сочи",            tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: true,  юг: true,  север: false, река: false, порт: true,  древний: false } },
+  { name: "Владивосток",     tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: false, юг: false, север: false, река: false, порт: true,  древний: false } },
+  { name: "Нижний Новгород", tags: { столица: false, миллионник: true,  море: false, сибирь: false, европа: true,  юг: false, север: false, река: true,  порт: false, древний: true  } },
+  { name: "Калининград",     tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: true,  юг: false, север: false, река: false, порт: true,  древний: true  } },
+  { name: "Ярославль",       tags: { столица: false, миллионник: false, море: false, сибирь: false, европа: true,  юг: false, север: false, река: true,  порт: false, древний: true  } },
+  { name: "Омск",            tags: { столица: false, миллионник: true,  море: false, сибирь: true,  европа: false, юг: false, север: false, река: true,  порт: false, древний: false } },
+  { name: "Красноярск",      tags: { столица: false, миллионник: true,  море: false, сибирь: true,  европа: false, юг: false, север: false, река: true,  порт: false, древний: false } },
+  { name: "Ростов-на-Дону",  tags: { столица: false, миллионник: true,  море: false, сибирь: false, европа: true,  юг: true,  север: false, река: true,  порт: false, древний: false } },
+  { name: "Астрахань",       tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: true,  юг: true,  север: false, река: true,  порт: true,  древний: true  } },
+  { name: "Мурманск",        tags: { столица: false, миллионник: false, море: true,  сибирь: false, европа: true,  юг: false, север: true,  река: false, порт: true,  древний: false } },
+];
+
+const AI_QUESTIONS: { key: keyof typeof AI_CITIES[0]["tags"]; text: string }[] = [
+  { key: "столица",  text: "Это столица России?" },
+  { key: "миллионник", text: "В этом городе больше миллиона жителей?" },
+  { key: "море",     text: "Этот город стоит у моря или океана?" },
+  { key: "сибирь",   text: "Этот город находится в Сибири?" },
+  { key: "европа",   text: "Этот город в европейской части России?" },
+  { key: "юг",       text: "Это южный город (ниже Ростова по широте)?" },
+  { key: "север",    text: "Это северный город (севернее Питера)?" },
+  { key: "река",     text: "Через город протекает крупная река?" },
+  { key: "порт",     text: "Это портовый город?" },
+  { key: "древний",  text: "Городу больше 400 лет?" },
+];
+
+function AiDetectiveGame({ onResult }: { onResult: (won: boolean) => void }) {
+  const [answers, setAnswers] = useState<Record<string, boolean>>({});
+  const [qIdx, setQIdx] = useState(0);
+  const [phase, setPhase] = useState<"asking" | "guessing" | "done">("asking");
+  const [guess, setGuess] = useState("");
+
+  const remaining = AI_CITIES.filter(city =>
+    Object.entries(answers).every(([key, val]) => city.tags[key as keyof typeof city.tags] === val)
+  );
+
+  const nextQuestion = () => {
+    // выбираем вопрос, который максимально делит remaining пополам
+    const unanswered = AI_QUESTIONS.filter(q => !(q.key in answers));
+    if (!unanswered.length || remaining.length <= 1) {
+      const top = remaining[0]?.name ?? "Неизвестно";
+      setGuess(top);
+      setPhase("guessing");
+      return;
+    }
+    const best = unanswered.reduce((prev, cur) => {
+      const yes = remaining.filter(c => c.tags[cur.key]).length;
+      const balance = Math.abs(yes - remaining.length / 2);
+      const prevYes = remaining.filter(c => c.tags[prev.key]).length;
+      const prevBalance = Math.abs(prevYes - remaining.length / 2);
+      return balance < prevBalance ? cur : prev;
+    });
+    setQIdx(AI_QUESTIONS.indexOf(best));
+  };
+
+  const handleAnswer = (val: boolean) => {
+    const key = AI_QUESTIONS[qIdx].key;
+    const newAnswers = { ...answers, [key]: val };
+    setAnswers(newAnswers);
+
+    const newRemaining = AI_CITIES.filter(city =>
+      Object.entries(newAnswers).every(([k, v]) => city.tags[k as keyof typeof city.tags] === v)
+    );
+
+    if (newRemaining.length <= 1 || Object.keys(newAnswers).length >= 7) {
+      const top = newRemaining[0]?.name ?? "Неизвестно";
+      setGuess(top);
+      setPhase("guessing");
+    } else {
+      // пересчитаем следующий вопрос с newAnswers
+      const unanswered = AI_QUESTIONS.filter(q => !(q.key in newAnswers));
+      if (!unanswered.length) { setGuess(newRemaining[0]?.name ?? "?"); setPhase("guessing"); return; }
+      const best = unanswered.reduce((prev, cur) => {
+        const yes = newRemaining.filter(c => c.tags[cur.key]).length;
+        const balance = Math.abs(yes - newRemaining.length / 2);
+        const prevYes = newRemaining.filter(c => c.tags[prev.key]).length;
+        const prevBalance = Math.abs(prevYes - newRemaining.length / 2);
+        return balance < prevBalance ? cur : prev;
+      });
+      setQIdx(AI_QUESTIONS.indexOf(best));
+    }
+  };
+
+  const handleResult = (correct: boolean) => {
+    setPhase("done");
+    onResult(correct);
+  };
+
+  const questionText = AI_QUESTIONS[qIdx]?.text ?? "";
+  const askedCount = Object.keys(answers).length;
+
+  return (
+    <div className="space-y-3">
+      {phase === "asking" && (
+        <>
+          <p className="text-[10px] text-muted-foreground">Вопрос {askedCount + 1} · осталось городов: {remaining.length}</p>
+          <p className="text-sm font-semibold text-foreground leading-snug">{questionText}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleAnswer(true)}
+              className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Да ✓
+            </button>
+            <button
+              onClick={() => handleAnswer(false)}
+              className="flex-1 py-2.5 rounded-xl bg-secondary text-foreground text-sm font-medium border border-border hover:bg-accent transition-colors"
+            >
+              Нет ✗
+            </button>
+          </div>
+        </>
+      )}
+      {phase === "guessing" && (
+        <>
+          <p className="text-sm text-muted-foreground">Я думаю, что это...</p>
+          <p className="text-xl font-bold text-primary animate-bounce-in">{guess}?</p>
+          <p className="text-xs text-muted-foreground">Угадал?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleResult(true)}
+              className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Да, угадал! 🎉
+            </button>
+            <button
+              onClick={() => handleResult(false)}
+              className="flex-1 py-2.5 rounded-xl bg-secondary text-foreground text-sm font-medium border border-border hover:bg-accent transition-colors"
+            >
+              Нет 😄
+            </button>
+          </div>
+        </>
+      )}
+      {phase === "done" && (
+        <p className="text-sm text-muted-foreground">Считаем результат...</p>
       )}
     </div>
   );
@@ -267,6 +414,7 @@ function GameBubble({ gameType, onComplete }: { gameType: GameType; onComplete: 
     quiz: "🧠 Викторина",
     wordguess: "🔤 Угадай слово",
     cityguess: "🏙️ Угадай город",
+    aidetective: "🤖 ИИ-детектив",
   };
 
   const handleReaction = (ms: number) => {
@@ -292,6 +440,11 @@ function GameBubble({ gameType, onComplete }: { gameType: GameType; onComplete: 
     onComplete(won ? `Правильно — это ${city}! Отличное знание географии 🗺️` : `Не угадал — это был ${city}. В следующий раз получится 💪`);
   };
 
+  const handleAiDetective = (won: boolean) => {
+    setDone(true);
+    onComplete(won ? "Угадал! Логика работает на все 100 🤖🎉" : "Не угадал на этот раз — ты перехитрил меня! Уважаю 😄");
+  };
+
   return (
     <div className="chat-bubble-bot p-4 w-72 animate-fade-in">
       <p className="text-xs font-semibold text-primary mb-3">{titles[gameType]}</p>
@@ -303,6 +456,7 @@ function GameBubble({ gameType, onComplete }: { gameType: GameType; onComplete: 
           {gameType === "quiz" && <QuizGame onResult={handleQuiz} />}
           {gameType === "wordguess" && <WordGuessGame onResult={handleWord} />}
           {gameType === "cityguess" && <CityGuessGame onResult={handleCity} />}
+          {gameType === "aidetective" && <AiDetectiveGame onResult={handleAiDetective} />}
         </>
       )}
     </div>
@@ -314,6 +468,7 @@ const GAME_CHIPS: { type: GameType; emoji: string; label: string; desc: string }
   { type: "quiz", emoji: "🧠", label: "Викторина", desc: "Ответь на вопрос" },
   { type: "wordguess", emoji: "🔤", label: "Угадай слово", desc: "Буква за буквой" },
   { type: "cityguess", emoji: "🏙️", label: "Угадай город", desc: "По подсказкам" },
+  { type: "aidetective", emoji: "🤖", label: "ИИ-детектив", desc: "ИИ угадает твой город" },
 ];
 
 const JOKE_CHIP = { emoji: "😂", label: "Анекдот", desc: "Случайная шутка" };
